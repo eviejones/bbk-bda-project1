@@ -1,1 +1,0 @@
-"""Custom Python functions for use in the project."""
