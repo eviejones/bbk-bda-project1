@@ -1,0 +1,8 @@
+# Ignore virtual environment
+.bbk/
+
+# Ignore other common files
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
