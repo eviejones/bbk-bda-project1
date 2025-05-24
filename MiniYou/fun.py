@@ -63,27 +63,28 @@ def mini_len(input_dict: dict[str, str]) -> int:
     """
     data = input_dict.get("Data")
     column = input_dict.get("Column")
-    columns = data[0].keys()
-    output_dict = {}
-    if column in columns:
-        output_dict["Exists"] = True
-    else:
-        output_dict["Exists"] = False
-        
-    output_dict["Column"] = column
     if not data:
         raise ValueError("Data is required in the input dictionary. Try adding 'data'.")
     if not column:
         raise ValueError("Column name is required in the input dictionary. Try adding 'Column'.")
     
-    records = 0
-    missing = 0
-    for row in data:
-        records += 1
-        if row[column] is None or row[column] == "" or row[column] == "None":
-            missing += 1
-    output_dict["NumRecords"] = records
-    output_dict["NumMissing"] = missing
+    columns = data[0].keys()
+    output_dict = {}
+    if column in columns:
+        output_dict["Exists"] = True
+        records = 0
+        missing = 0
+        for row in data:
+            records += 1
+            if row[column] is None or row[column] == "" or row[column] == "None":
+                missing += 1
+        output_dict["Column"] = column
+        output_dict["NumRecords"] = records
+        output_dict["NumMissing"] = missing
+        
+    else:
+        output_dict["Exists"] = False
+        
     
     return output_dict
     
