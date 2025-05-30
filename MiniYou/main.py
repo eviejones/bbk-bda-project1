@@ -9,10 +9,14 @@ print(health_data[0])
 
 # Test out mini_load_csv_yield
 health_data_yield = mini_load_csv_yield(filename)
-for row in health_data_yield:
-    print(row)
-    break  # Print only the first row for demonstration
+# for row in health_data_yield:
+#     print(row)
+#     break  # Print only the first row for demonstration
 
-test_dict = {"Data": health_data, "Column": "Sleep Disorder"}
-test_len = mini_len(test_dict)
-print(test_len)
+# Test mini_len
+test_mini_len = mini_len({"Data": health_data, "Column": "Sleep Diorder"})
+print(test_mini_len)
+
+# Test mini_search
+test_mini_search = mini_search({"Data": health_data, "Column": "Sleep Disorder", "Value": "Insomnia"})
+print(test_mini_search)

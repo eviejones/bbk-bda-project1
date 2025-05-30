@@ -53,13 +53,17 @@ def mini_load_csv_yield(filename: str) -> dict[str, str]:
     
 def mini_len(input_dict: dict[str, str]) -> int:
     """
-    Returns the length of the input dictionary.
+    Takes a dictionary with 'Data' and 'Column' keys and returns a dictionary with information about the number of records in a specified column.
 
     Args:
-        input_dict (dict): The input dictionary.
+        input_dict (dict): The input dictionary. Must contain 'Data' and 'Column' keys.
+            Example: {"Data": health_data, "Column": "sleep"}
 
     Returns:
-        int: The number of key-value pairs in the dictionary.
+        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
+    
+    Raises:
+        ValueError: If 'Data' or 'Column' is not provided in the input dictionary.
     """
     data = input_dict.get("Data")
     column = input_dict.get("Column")
@@ -84,7 +88,63 @@ def mini_len(input_dict: dict[str, str]) -> int:
         
     else:
         output_dict["Exists"] = False
+    
+    return output_dict
+
+def mini_search(input_dict: dict[str, str]) -> dict[str, str]:
+    """
+    Searches for a specific value in a a specific column and returns a dictionary with information about the search result.
+    
+    Arg:
+        input_dict (dict): A dictionary containing the search term and data. Must contain 'Data', 'Column', and 'Value' keys.
+            Example: {"Data": health_data, "Column": "sleep", "Value": "insomnia"}
+            
+    Returns:
+        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
+    
+    Raises:
+        ValueError: If 'Data', 'Column' or 'Value' is not provided in the input dictionary.
+    """
+    data = input_dict.get("Data")
+    column = input_dict.get("Column")
+    search_value = input_dict.get("Value")
+
+    if not data or not column or not search_value:
+        missing_keys = []
+        if not data:
+            missing_keys.append("'Data'")
+        if not column:
+            missing_keys.append("'Column'")
+        if not search_value:
+            missing_keys.append("'Value'")
+        raise ValueError(f"Missing required keys in the input dictionary: {', '.join(missing_keys)}")
         
+    output_dict = {}
+    for row in data:
+        print(row)
+        if row[column].lower() == search_value.lower():
+            output_dict["Exists"] = True
+            break
+        else:
+            output_dict["Exists"] = False
+    
+    output_dict["Column"] = column
+    output_dict["Value"] = search_value
     
     return output_dict
     
+def mini_count():
+    """
+    Searches for a specific value in a a specific column and returns a dictionary with information about the search result.
+    
+    Arg:
+        input_dict (dict): A dictionary containing the search term and data. Must contain 'Data', 'Column', and 'Value' keys.
+            Example: {"Data": health_data, "Column": "sleep", "Value": "insomnia"}
+            
+    Returns:
+        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
+    
+    Raises:
+        ValueError: If 'Data', 'Column' or 'Value' is not provided in the input dictionary.
+    """
+
