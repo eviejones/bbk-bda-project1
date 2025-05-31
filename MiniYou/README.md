@@ -1,13 +1,14 @@
 # bbk-bda-project1
-
+## Part A
+Write commments on each data set #TODO
 ## Part B
 ### B1  mini_len
 **IO**
 If exists:
-*Usage:* `test_mini_len = mini_len({"Data": health_data, "Column": "Sleep Disorder"})`
+*Usage:* `mini_len({"Data": sleep_data, "Column": "Sleep Disorder"})`
 *Output:* `{'Exists': True, 'Column': 'Sleep Disorder', 'NumRecords': 374, 'NumMissing': 219}`
 If doesn't exist:
-*Usage:* `test_mini_len = mini_len({"Data": health_data, "Column": "Sleep Dsorder"})`
+*Usage:* `mini_len({"Data": sleep_data, "Column": "Sleep Dsorder"})`
 *Output:* `{'Exists': False}`
 
 **Big-O**
@@ -16,7 +17,7 @@ Space: O(1) — uses constant amount of space.
 
 ### B2  mini_search
 **IO**
-*Usage*: `test_mini_search = mini_search({"Data": health_data, "Column": "Sleep Disorder", "Value": "Insomnia"})`
+*Usage*: `mini_search({"Data": sleep_data, "Column": "Sleep Disorder", "Value": "Insomnia"})`
 *Output:* `{'Exists': True, 'Column': 'Sleep Disorder', 'Value': 'Insomnia'}`
 
 **Big-O**
@@ -27,14 +28,24 @@ Space: O(1) — uses constant amount of space.
 Uses return because I am returning a summary of the search. 
 
 
-### XX  xxx
+### B3 mini_count
 **IO**
-*Usage*:
-*Output:* 
+*Usage*: `mini_count({"Data": sleep_data, "Column": "BMI Category", "Value": "Obese"})`
+*Output:* `{'Exists': True, 'Column': 'BMI Category', 'Value': 'Obese', 'Proportion': 0.03}`
 
 **Big-O**
 Time: 
 Space: 
+
+### Additional Functions
+#### mini_validate_input_dict
+**IO**
+*Usage*: `mini_validate_input_dict({"Data": sleep_data}, ["Data", "Column"])`
+*Output:* `ValueError: Missing required key: 'Column'`
+
+**Big-O**
+Time: O(n) - iterates through each data row
+Space: O(1) - does not require additional space
 
 
 ### XX  xxx
