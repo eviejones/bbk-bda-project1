@@ -46,7 +46,7 @@ def mini_data_types(data: list[dict[str, str]]) -> list[dict[str, Any]]:
     return data
 
 
-def mini_load_csv_dict(input_dict: dict[str, str]) -> list[dict[str, str]]:
+def mini_load_csv_dict(input_dict: dict[str, str]) -> list[dict[str, Any]]:
     """
     Loads a CSV file into a list of dictionaries.
 
@@ -61,12 +61,13 @@ def mini_load_csv_dict(input_dict: dict[str, str]) -> list[dict[str, str]]:
     Raises:
         ValueError: If 'filename' is not provided in the input dictionary.
     """
-    filename = input_dict.get('filename')
+    filename = input_dict.get("filename")
     if not filename:
         raise ValueError("Filename is required in the input dictionary.")
-    with open(filename, mode='r', newline='', encoding='utf-8') as file:
+    with open(filename, mode="r", newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         data = [row for row in reader]
+        data = mini_data_types(data)  # Convert data types
     return data
 
 
@@ -86,16 +87,16 @@ def mini_load_csv_yield(filename: str) -> dict[str, str]:
         FileNotFoundErrror: If file is not found.
     """
     try:
-        with open(filename, newline='', encoding='utf-8') as csvfile:
+        with open(filename, newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                yield row
+                yield row  # TODO Convert data types
     except FileNotFoundError:
         print(f"Error: File '{filename}' not found.")
         return
 
 
-def mini_len(input_dict: dict[str, str]) -> int:
+def mini_len(input_dict: dict[str, str]) -> dict[str, Any]:
     """
     Takes a dictionary with 'Data' and 'Column' keys and returns a dictionary with information about the number of records in a specified column.
 
@@ -104,8 +105,8 @@ def mini_len(input_dict: dict[str, str]) -> int:
             Example: {"Data": sleep_data, "Column": "sleep"}
 
     Returns:
-        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
-
+        dict[str, Any]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
+            Example: {'Exists': True, 'Column': 'BMI Category', 'NumRecords': 374, 'NumMissing': 0}
     Raises:
         ValueError: If 'Data' or 'Column' is not provided in the input dictionary.
     """
@@ -133,7 +134,7 @@ def mini_len(input_dict: dict[str, str]) -> int:
     return output_dict
 
 
-def mini_search(input_dict: dict[str, str]) -> dict[str, str]:
+def mini_search(input_dict: dict[str, str]) -> dict[str, Any]:
     """
     Searches for a specific value in a a specific column and returns a dictionary with information about the search result.
 
@@ -142,7 +143,7 @@ def mini_search(input_dict: dict[str, str]) -> dict[str, str]:
             Example: {"Data": sleep_data, "Column": "sleep", "Value": "insomnia"}
 
     Returns:
-        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
+        dict[str, Any]: A dictionary with keys 'Exists', 'Column', 'NumRecords', and 'NumMissing'.
 
     Raises:
         ValueError: If 'Data', 'Column' or 'Value' is not provided in the input dictionary.
@@ -153,12 +154,15 @@ def mini_search(input_dict: dict[str, str]) -> dict[str, str]:
     search_value = input_dict.get("Value")
 
     output_dict = {}
-    for row in data:
-        if row[column].lower() == search_value.lower():
+    output_dict["Exists"] = False
+    for record in data:
+        if isinstance(record[column], str):
+            if record[column].lower() == search_value.lower():
+                output_dict["Exists"] = True
+                break
+        elif record[column] == search_value:
             output_dict["Exists"] = True
             break
-        else:
-            output_dict["Exists"] = False
 
     output_dict["Column"] = column
     output_dict["Value"] = search_value
@@ -166,7 +170,7 @@ def mini_search(input_dict: dict[str, str]) -> dict[str, str]:
     return output_dict
 
 
-def mini_count(input_dict: dict[str, str]) -> dict[str, int]:
+def mini_count(input_dict: dict[str, str]) -> dict[str, Any]:
     """
     Searches for a specific value in a a specific column and returns a dictionary which contains the proportion of records that match the search value.
 
@@ -175,7 +179,7 @@ def mini_count(input_dict: dict[str, str]) -> dict[str, int]:
             Example: {"Data": sleep_data, "Column": "sleep", "Value": "insomnia"}
 
     Returns:
-        dict[str, str]: A dictionary with keys 'Exists', 'Column', 'Value' and 'Proportion'.
+        dict[str, Any]: A dictionary with keys 'Exists', 'Column', 'Value' and 'Proportion'.
             Example: {'Exists': True, 'Column': 'BMI Category', 'Value': 'Obese', 'Proportion': 0.03}
     Raises:
         ValueError: If 'Data', 'Column' or 'Value' is not provided in the input dictionary.
@@ -190,13 +194,16 @@ def mini_count(input_dict: dict[str, str]) -> dict[str, int]:
         total = 0
         for row in data:
             total += 1
-            if row[column].lower() == search_value.lower():
+            if isinstance(row[column], str):
+                if row[column].lower() == search_value.lower():
+                    count += 1
+            elif row[column] == search_value:
                 count += 1
         output_dict["Proportion"] = round(count / total, 2)
     return output_dict  # TODO check if should just be exists
 
 
-def mini_count_match(input_dict: dict[str, str]) -> dict[str, int]:
+def mini_count_match(input_dict: dict[str, str]) -> dict[str, Any]:
     """
     Counts the number of records that match a specific value in a specific column.
 
@@ -211,3 +218,162 @@ def mini_count_match(input_dict: dict[str, str]) -> dict[str, int]:
     Raises:
         ValueError: If 'Data', 'Column' or 'Value' is not provided in the input dictionary.
     """
+    data = input_dict.get("Data")
+    conditions = input_dict.copy()
+    del conditions["Data"]
+    columns = conditions.keys()
+
+    count = 0
+    for record in data:
+        match = True
+        for column in columns:
+            if record[column] != input_dict[column]:
+                match = False
+                break
+        if match:  # If all conditions are met
+            count += 1
+
+    output_dict = {"Conditions": conditions, "Count": count}
+    return output_dict
+
+
+def mini_average(input_dict: dict[str, str]) -> dict[str, Any]:
+    """
+    Calculates the mean of a specific column in the data.
+
+    Args:
+        input_dict (dict): A dictionary containing the data and the column to calculate the mean for.
+            Must contain 'Data' and 'Column' keys.
+            Example: {"Data": sleep_data, "Column": "Heart Rate"}
+
+    Returns:
+        float: The mean of the specified column.
+
+    Raises:
+        ValueError: If 'Data' or 'Column' is not provided in the input dictionary.
+        ValueError: If the specified column does not contain numeric values.
+    """
+    mini_validate_input_dict(input_dict, ["Data", "Column"])
+    data = input_dict.get("Data")
+    column = input_dict.get("Column")
+    output_dict = mini_search(input_dict)
+    total = 0
+    count = 0
+    for record in data:
+        if column in record and record[column] not in [None, "", "None"]:
+            if not isinstance(record[column], (int, float)):
+                raise ValueError(f"Column '{column}' does not contain numeric values.")
+            total += float(record[column])
+            count += 1
+        if count == 0:
+            return 0.0  # Avoid division by zero
+        output_dict["Average"] = round(total / count, 2)
+    return output_dict
+
+
+def mini_extract_metrics(input_dict: dict[str, str]) -> dict[str, Any]:
+    """
+    Takes specified columns and returns a list of dictionaries containing the values for those columns for records where the 'Occupation' is "Teacher".
+
+    Args:
+        input_dict (dict[str, str]): A dictionary containing the data and the metrics to extract.
+            Must contain 'Data' and 'Metrics' keys.
+            Example: {"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"}
+
+    Returns:
+        list[dict]: A list of dictionaries with the specified metrics and their values.
+            Example: [{'Person ID': 262, 'Quality of Sleep': 7, 'Physical Activity Level': 45}, {'Person ID': 263, 'Quality of Sleep': 7, 'Physical Activity Level': 45}]
+
+    Raises:
+        ValueError: If 'Data' is not provided in the input dictionary.
+    """
+    mini_validate_input_dict(input_dict, ["Data"])
+    data = input_dict.get("Data")
+    columns = input_dict.copy()
+    del columns["Data"]
+    columns = columns.values()
+    results = []
+    for record in data:
+        if record["Occupation"] == "Teacher":
+            result = {}
+            for col in columns:
+                if col in record:
+                    result[col] = record[col]
+                else:
+                    result[col] = None
+            results.append(result)
+    return results
+
+
+def mini_max(data: list[dict[str, Any]], column: str) -> int | float:
+    """
+    Returns the maximum value in a specified column of a list of dictionaries.
+
+    Args:
+        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
+            Example: [{'column1': 'value1', 'column2': 23}, ...]
+
+        column (str): The column name to find the maximum value for.
+            Example: "Daily Steps"
+
+    Returns:
+        int | float: The maximum value found in the specified column.
+    """
+    max_value = data[0][column]
+    for record in data:
+        if column in record and record[column] not in [None, "", "None"]:
+            if not isinstance(record[column], (int, float)):
+                raise ValueError(f"Column '{column}' does not contain numeric values.")
+            if record[column] > max_value:
+                max_value = record[column]
+    return max_value
+
+
+def mini_min(data: list[dict[str, Any]], column: str) -> int | float:
+    """
+    Returns the minimum value in a specified column of a list of dictionaries.
+
+    Args:
+        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
+            Example: [{'column1': 'value1', 'column2': 23}, ...]
+
+        column (str): The column name to find the minimum value for.
+            Example: "Daily Steps"
+    Returns:
+        int | float: The minimum value found in the specified column.
+    """
+    min_value = data[0][column]
+    for record in data:
+        if column in record and record[column] not in [None, "", "None"]:
+            if not isinstance(record[column], (int, float)):
+                raise ValueError(f"Column '{column}' does not contain numeric values.")
+            if record[column] < min_value:
+                min_value = record[column]
+    return min_value
+
+
+def mini_stats(input_dict):
+    """
+    Takes a dictionary with 'Data', 'Column', and 'Function' keys and returns a dictionary with the result of the specified function (max or min) applied to the specified column.
+
+    Args:
+        input_dict (dict): A dictionary containing the data, column, and function to apply.
+            Must contain 'Data', 'Column', and 'Function' keys.
+            Example: {"Data": sleep_data, "Column": "Age", "Function": "max"}
+    Returns:
+        dict: A dictionary with the function name, column, and result.
+            Example: {'Function': 'max', 'Column': 'Age', 'Result': 65}
+    """
+    data = input_dict.get("Data")
+    column = input_dict.get("Column")
+    mini_validate_input_dict(input_dict, ["Data", "Column", "Function"])
+    output_dict = {
+        "Function": input_dict.get("Function"),
+        "Column": column,
+    }
+    if input_dict.get("Function") == "max":
+        output_dict["Result"] = mini_max(data, column)
+    elif input_dict.get("Function") == "min":
+        output_dict["Result"] = mini_min(data, column)
+
+    return output_dict

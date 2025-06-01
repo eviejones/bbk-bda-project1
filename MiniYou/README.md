@@ -37,6 +37,44 @@ Uses return because I am returning a summary of the search.
 Time: 
 Space: 
 
+**Return or yield**
+
+
+### B4  mini_count_match
+**IO**
+*Usage*: `mini_count_match({"Data": sleep_data, "Occupation": "Doctor", "Heart Rate": 72})`
+*Output:* `{'Conditions': {'Occupation': 'Doctor', 'Heart Rate': 72}, 'Count': 25}`
+
+**Big-O**
+Time: 
+Space: 
+
+**Return or yield**
+
+### B5  mini_average
+**IO**
+*Usage*: `mini_average(({"Data": sleep_data, "Column": "Daily Steps", "Value": 10000}))`
+*Output:* `{'Exists': True, 'Column': 'Daily Steps', 'Value': 10000, 'Average': 6816.84}`
+
+**Big-O**
+Time: 
+Space: 
+
+**Return or yield**
+
+### B6  mini_extract_metrics
+**IO**
+*Usage*: `mini_extract_metrics({"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"})`
+*Output:* `[{'Person ID': 262, 'Quality of Sleep': 7, 'Physical Activity Level': 45}, {'Person ID': 263, 'Quality of Sleep': 7, 'Physical Activity Level': 45}]`
+
+**Big-O**
+Time: 
+Space: 
+
+**Return or yield**
+
+
+
 ### Additional Functions
 #### mini_validate_input_dict
 **IO**
@@ -46,6 +84,17 @@ Space:
 **Big-O**
 Time: O(n) - iterates through each data row
 Space: O(1) - does not require additional space
+
+
+### XX  xxx
+**IO**
+*Usage*:
+*Output:* 
+
+**Big-O**
+Time: 
+Space: 
+
 
 
 ### XX  xxx
