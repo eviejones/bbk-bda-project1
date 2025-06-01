@@ -122,7 +122,7 @@ def mini_len(input_dict: dict[str, str]) -> dict[str, Any]:
         missing = 0
         for row in data:
             records += 1
-            if row[column] is None or row[column] == "" or row[column] == "None":
+            if row[column] in [None, "", "None"]:
                 missing += 1
         output_dict["Column"] = column
         output_dict["NumRecords"] = records
@@ -265,8 +265,7 @@ def mini_average(input_dict: dict[str, str]) -> dict[str, Any]:
                 raise ValueError(f"Column '{column}' does not contain numeric values.")
             total += float(record[column])
             count += 1
-        if count == 0:
-            return 0.0  # Avoid division by zero
+        #TODO for if total is 0 ?
         output_dict["Average"] = round(total / count, 2)
     return output_dict
 
@@ -294,15 +293,10 @@ def mini_extract_metrics(input_dict: dict[str, str]) -> dict[str, Any]:
     columns = columns.values()
     results = []
     for record in data:
-        if record["Occupation"] == "Teacher":
-            result = {}
-            for col in columns:
-                if col in record:
-                    result[col] = record[col]
-                else:
-                    result[col] = None
+        if record.get("Occupation") == "Teacher":  
+            result = {col: record.get(col, None) for col in columns}
             results.append(result)
-    return results
+    return results # this might be better as a yield #TODO
 
 
 def mini_max(data: list[dict[str, Any]], column: str) -> int | float:
@@ -319,13 +313,11 @@ def mini_max(data: list[dict[str, Any]], column: str) -> int | float:
     Returns:
         int | float: The maximum value found in the specified column.
     """
-    max_value = data[0][column]
+    max_value = float("-inf")
     for record in data:
-        if column in record and record[column] not in [None, "", "None"]:
-            if not isinstance(record[column], (int, float)):
-                raise ValueError(f"Column '{column}' does not contain numeric values.")
-            if record[column] > max_value:
-                max_value = record[column]
+        value = record[column]
+        if value not in [None, "", "None"] and isinstance(value, (int, float)):
+            max_value = max(max_value, value)
     return max_value
 
 
@@ -342,13 +334,11 @@ def mini_min(data: list[dict[str, Any]], column: str) -> int | float:
     Returns:
         int | float: The minimum value found in the specified column.
     """
-    min_value = data[0][column]
+    min_value = float("-inf")
     for record in data:
-        if column in record and record[column] not in [None, "", "None"]:
-            if not isinstance(record[column], (int, float)):
-                raise ValueError(f"Column '{column}' does not contain numeric values.")
-            if record[column] < min_value:
-                min_value = record[column]
+        value = record[column]
+        if value not in [None, "", "None"] and isinstance(value, (int, float)):
+            min_value = max(min_value, value)
     return min_value
 
 
