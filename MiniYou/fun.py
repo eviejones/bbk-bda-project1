@@ -508,7 +508,7 @@ def mini_call_api_return(input_dict: dict[str: str]):
         time.sleep(1)
     return responses
 
-def mini_max_api(data: list[dict[str, Any]]) -> Union[int, float]:
+def mini_hottest_city(data: list[dict[str, Any]]) -> Union[int, float]:
     """
     Returns the maximum value in a specified column of a list of dictionaries.
 
@@ -531,7 +531,7 @@ def mini_max_api(data: list[dict[str, Any]]) -> Union[int, float]:
                 city = record["city"]
     return {"City": city, "Max temp": max_value}
 
-def mini_min_api(data: list[dict[str, Any]]) -> Union[int, float]:
+def mini_coldest_city(data: list[dict[str, Any]]) -> Union[int, float]:
     """
     Returns the maximum value in a specified column of a list of dictionaries.
 
