@@ -1,8 +1,25 @@
 """Custom Python functions for use in the project."""
 
 import csv
-from typing import Any
+from typing import Any, Union
+import requests
+import time
 
+def mini_simple_len(data: list[dict[str, Any]]) -> int:
+    """
+    Returns the number of records in a list of dictionaries.
+
+    Args:
+        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
+            Example: [{'column1': 'value1', 'column2': 23}, ...]
+
+    Returns:
+        int: The number of records in the data.
+    """
+    count = 0
+    for i in data:
+        count += 1
+    return count
 
 def mini_validate_input_dict(input_dict: dict[str, str], columns: list[str]) -> None:
     """
@@ -115,23 +132,20 @@ def mini_len(input_dict: dict[str, str]) -> dict[str, Any]:
     column = input_dict.get("Column")
 
     columns = data[0].keys()
-    output_dict = {}
     if column in columns:
-        output_dict["Exists"] = True
-        records = 0
         missing = 0
         for row in data:
-            records += 1
+            records = mini_simple_len(data)
             if row[column] in [None, "", "None"]:
                 missing += 1
-        output_dict["Column"] = column
-        output_dict["NumRecords"] = records
-        output_dict["NumMissing"] = missing
-
+        return {
+            "Exists": True,
+            "Column": column,
+            "NumRecords": records,
+            "NumMissing": missing
+        }
     else:
-        output_dict["Exists"] = False
-
-    return output_dict
+        return {"Exists": False}
 
 
 def mini_search(input_dict: dict[str, str]) -> dict[str, Any]:
@@ -189,11 +203,10 @@ def mini_count(input_dict: dict[str, str]) -> dict[str, Any]:
     column = input_dict.get("Column")
     search_value = input_dict.get("Value")
     output_dict = mini_search(input_dict)
+    total = mini_simple_len(data)
     if output_dict["Exists"]:
         count = 0
-        total = 0
         for row in data:
-            total += 1
             if isinstance(row[column], str):
                 if row[column].lower() == search_value.lower():
                     count += 1
@@ -256,19 +269,27 @@ def mini_average(input_dict: dict[str, str]) -> dict[str, Any]:
     mini_validate_input_dict(input_dict, ["Data", "Column"])
     data = input_dict.get("Data")
     column = input_dict.get("Column")
-    output_dict = mini_search(input_dict)
-    total = 0
+    
+    # Check if column exists in the first record (assuming data is non-empty)
+    if not data or column not in data[0]:
+        return {"Exists": False, "Column": column}
+    
+    total = 0.0
     count = 0
     for record in data:
-        if column in record and record[column] not in [None, "", "None"]:
-            if not isinstance(record[column], (int, float)):
+        value = record.get(column)
+        if value not in (None, "", "None"):
+            if not isinstance(value, (int, float)):
                 raise ValueError(f"Column '{column}' does not contain numeric values.")
-            total += float(record[column])
+            total += float(value)
             count += 1
-        #TODO for if total is 0 ?
-        output_dict["Average"] = round(total / count, 2)
-    return output_dict
-
+    
+    if count == 0:
+        average = 0
+    else:
+        average = round(total / count, 2)
+    
+    return {"Exists": True, "Column": column, "Average": average}
 
 def mini_extract_metrics(input_dict: dict[str, str]) -> dict[str, Any]:
     """
@@ -279,9 +300,9 @@ def mini_extract_metrics(input_dict: dict[str, str]) -> dict[str, Any]:
             Must contain 'Data' and 'Metrics' keys.
             Example: {"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"}
 
-    Returns:
-        list[dict]: A list of dictionaries with the specified metrics and their values.
-            Example: [{'Person ID': 262, 'Quality of Sleep': 7, 'Physical Activity Level': 45}, {'Person ID': 263, 'Quality of Sleep': 7, 'Physical Activity Level': 45}]
+    Yields:
+        dict: A dictionary with the specified metrics and their values.
+            Example: {'Person ID': 262, 'Quality of Sleep': 7, 'Physical Activity Level': 45}
 
     Raises:
         ValueError: If 'Data' is not provided in the input dictionary.
@@ -291,15 +312,12 @@ def mini_extract_metrics(input_dict: dict[str, str]) -> dict[str, Any]:
     columns = input_dict.copy()
     del columns["Data"]
     columns = columns.values()
-    results = []
     for record in data:
         if record.get("Occupation") == "Teacher":  
             result = {col: record.get(col, None) for col in columns}
-            results.append(result)
-    return results # this might be better as a yield #TODO
+            yield result
 
-
-def mini_max(data: list[dict[str, Any]], column: str) -> int | float:
+def mini_max(data: list[dict[str, Any]], column: str) -> Union[int, float]:
     """
     Returns the maximum value in a specified column of a list of dictionaries.
 
@@ -321,7 +339,7 @@ def mini_max(data: list[dict[str, Any]], column: str) -> int | float:
     return max_value
 
 
-def mini_min(data: list[dict[str, Any]], column: str) -> int | float:
+def mini_min(data: list[dict[str, Any]], column: str) -> Union[int, float]:
     """
     Returns the minimum value in a specified column of a list of dictionaries.
 
@@ -367,3 +385,99 @@ def mini_stats(input_dict):
         output_dict["Result"] = mini_min(data, column)
 
     return output_dict
+
+def mini_bubble_sort(data: list[dict[str, Any]], column: str) -> dict[str, Any]: #TODO catch non-numerical and maybe change the type hints
+    """
+    Sorts the values of a specified column in a list of dictionaries using bubble sort.
+
+    Args:
+        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a record.
+            Example: [{'person': 'Alice', 'DailySteps': 200}, {'person': 'Bob', 'DailySteps': 300}]
+        column (str): The column name to sort values by.
+            Example: "DailySteps"
+
+    Returns:
+        dict[str, Any]: A dictionary containing the column name and the sorted list of values.
+            Example: {"Column": "DailySteps", "Sorted data": [200, 300]}
+    """
+    n = mini_simple_len(data)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if data[j][column] > data[j + 1][column]:
+                data[j], data[j + 1] = data[j + 1], data[j]
+    sorted_values = [record[column] for record in data if column in record]
+
+    output_dict = {
+        "Column": column,
+        "Sorted data": sorted_values
+    }
+    return output_dict
+
+def mini_value_exists(sorted_data: list[Union[int, float]], value: Union[int, float]):
+    """
+    Checks if a value exists in a list of data using binary search.
+    
+    Args: 
+        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a record.
+            Example: [{'person': 'Alice', 'Daily Steps': 200}, {'person': 'Bob', 'Daily Steps': 300}]
+        value (int or float): The value to check. 
+            Example: 200.
+    Returns:
+        dict: Of the value searched for and if it exists.
+            Example {"Value": 200, "Exists: True}
+    """
+    left = 0
+    right = len(sorted_data) - 1
+    
+    while left <= right:
+        mid = (left + right) // 2
+        mid_value = sorted_data[mid]
+        
+        if mid_value == value:
+            return {"Value": value, "Exists": True}
+        elif mid_value < value:
+            left = mid + 1
+        else:
+            right = mid - 1
+    
+    return {"Value": value, "Exists": False}
+
+
+def mini_frequency_table(input_dict):
+    """
+    Takes an input dictionary which contains the data and the column to check and returns a frequency table containing the number of times a value appears in the column. 
+    """
+    mini_validate_input_dict(input_dict, ["Data", "Column"])
+    data = input_dict.get("Data")
+    column = input_dict.get("Column")
+    # TODO add case insensitivity
+    
+    results = {}
+    
+    for record in data:
+        item = record[column]
+        results[item] = results.get(item, 0) + 1
+    
+    return {column: results}
+
+def mini_call_api(input_dict: dict[str: str]):
+    """
+    Takes an input dictionary and pulls data from the open-meteo api.
+    
+    Args:
+        input_dict: Input dictionary which includes the city, lat and lon.
+            Example: {"city": "New York", "country": "USA", "lat": 40.7128, "lon": -74.0060}
+    Yields:
+        dict: Response data for each city.
+            Example: {'latitude': 40.710335, 'longitude': -73.99309, 'generationtime_ms': 0.028967857360839844, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 32.0, 'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'}, 'hourly': {'time': ['2025-06-06T00:00'}}.
+    """
+    url = 'https://api.open-meteo.com/v1/forecast'
+    for place in input_dict:
+        params = {
+            "latitude": place.get("lat"),
+            "longitude": place.get("lon"),
+            "hourly": "temperature_2m",
+        }
+        response = requests.get(url, params=params, timeout=1)
+        yield response.json()
+        time.sleep(1)

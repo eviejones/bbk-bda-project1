@@ -64,18 +64,36 @@ Space: O(1) - doesn't create extra space
 
 ### B6  mini_extract_metrics
 **IO**
-*Usage*: `mini_extract_metrics({"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"})`
+*Usage*: `for teacher in mini_extract_metrics({"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"}):
+    print(teacher)`
 *Output:* `[{'Person ID': 262, 'Quality of Sleep': 7, 'Physical Activity Level': 45}, {'Person ID': 263, 'Quality of Sleep': 7, 'Physical Activity Level': 45}]`
 
 **Big-O**
 Time: O(n*m) - n is the number of rows and m is the columns
-Space: O(k) - size depends on the subset of data because of the occupation == teacher condition. 
+Space: O(m) - for the result dictionary that is yielded. Using yield means that there is less memory used in storage as it yields one result at a time, that result depends on the subset with the occupation == teacher condition. 
 
 **Return or yield**
+Yield because it is more memory efficient to generate items as needed rahter than store all in memory before returning. 
 
+### B6  mini_bubble_sort
+**IO**
+*Usage*: `mini_bubble_sort(sleep_data, "Daily Steps")`
+*Output:* `{'Column': 'Daily Steps', 'Sorted data': [3000, 3000, 3000, 3300, 3300, 3500, 3500, 3500, 3700, 3700, 4000, 4000, 4000, 4100, 4100, 4200, 4200, 4800, 4800, 5000, 5000, 5000, 5000, 5000, 5000,]}`
 
+**Big-O**
+Time: O(n^2) - due to the nested loop 
+Space: O(n) - because of the space used to store the sorted_values, otherwise it would be O(1)
+
+**Return or yield**
+Return because you are summarising the data and returning it. 
 
 ### Additional Functions
+
+#### mini_simple_len
+#TODO
+
+
+
 #### mini_validate_input_dict
 **IO**
 *Usage*: `mini_validate_input_dict({"Data": sleep_data}, ["Data", "Column"])`
