@@ -460,29 +460,8 @@ def mini_frequency_table(input_dict):
     
     return {column: results}
 
-def mini_call_api_yield(input_dict: dict[str: str]):
-    """
-    Takes an input dictionary and pulls data from the open-meteo api.
-    
-    Args:
-        input_dict: Input dictionary which includes the city, lat and lon.
-            Example: {"city": "New York", "country": "USA", "lat": 40.7128, "lon": -74.0060}
-    Yields:
-        dict: Response data for each city.
-            Example: {'latitude': 40.710335, 'longitude': -73.99309, 'generationtime_ms': 0.028967857360839844, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 32.0, 'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'}, 'hourly': {'time': ['2025-06-06T00:00'}}.
-    """
-    url = 'https://api.open-meteo.com/v1/forecast'
-    for place in input_dict:
-        params = {
-            "latitude": place.get("lat"),
-            "longitude": place.get("lon"),
-            "hourly": "temperature_2m",
-        }
-        response = requests.get(url, params=params, timeout=1)
-        yield response.json()
-        time.sleep(1)
         
-def mini_call_api_return(input_dict: dict[str: str]):
+def mini_get_weather_data(cities_dict: dict[str: str]):
     """
     Takes an input dictionary and pulls data from the open-meteo api.
     
@@ -495,41 +474,91 @@ def mini_call_api_return(input_dict: dict[str: str]):
     """
     url = 'https://api.open-meteo.com/v1/forecast'
     responses = []
-    for place in input_dict:
+    for place in cities_dict:
         params = {
             "latitude": place.get("lat"),
             "longitude": place.get("lon"),
             "hourly": "temperature_2m",
         }
-        response = requests.get(url, params=params, timeout=1)
+        response = requests.get(url, params=params, timeout=2)
         response_dict = response.json()
         response_dict["city"] = place["city"]
         responses.append(response_dict)
         time.sleep(1)
     return responses
 
-def mini_hottest_city(data: list[dict[str, Any]]) -> Union[int, float]:
+# def mini_hottest_city(data: list[dict[str, Any]]) -> Union[int, float]:
+#     """
+#     Returns the maximum value in a specified column of a list of dictionaries.
+
+#     Args:
+#         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
+#             Example: [{'column1': 'value1', 'column2': 23}, ...]
+
+#         column (str): The column name to find the maximum value for.
+#             Example: "Daily Steps"
+
+#     Returns:
+#         int | float: The maximum value found in the specified column.
+#     """
+#     max_value = float("-inf")
+#     for record in data:
+#         values = record["hourly"]["temperature_2m"]
+#         for value in values:
+#             if value > max_value:
+#                 max_value = value
+#                 city = record["city"]
+#     return {"City": city, "Max temp": max_value}
+
+def mini_get_weather_data_yield(cities_dict: dict[str: str]):
     """
-    Returns the maximum value in a specified column of a list of dictionaries.
+    Takes an input dictionary and pulls data from the open-meteo api.
+    
+    Args:
+        cities_dict: Input dictionary which includes the city, lat and lon.
+            Example: {"city": "New York", "country": "USA", "lat": 40.7128, "lon": -74.0060}
+    Yields:
+        dict: Response data for each city as it's retrieved.
+    """
+    url = 'https://api.open-meteo.com/v1/forecast'
+    for place in cities_dict:
+        params = {
+            "latitude": place.get("lat"),
+            "longitude": place.get("lon"),
+            "hourly": "temperature_2m",
+        }
+        try:
+            response = requests.get(url, params=params, timeout=15)
+            response_dict = response.json()
+            response_dict["city"] = place["city"]
+            yield response_dict
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data for {place['city']}: {e}")
+            continue
+        time.sleep(1)
+
+
+def mini_hottest_city(data_generator) -> dict[str: str]:
+    """
+    Returns the maximum temperature and city from a generator of weather data.
 
     Args:
-        data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
-            Example: [{'column1': 'value1', 'column2': 23}, ...]
-
-        column (str): The column name to find the maximum value for.
-            Example: "Daily Steps"
+        data_generator: A generator that yields weather data dictionaries.
 
     Returns:
-        int | float: The maximum value found in the specified column.
+        dict: Dictionary with the hottest city and temperature.
     """
     max_value = float("-inf")
-    for record in data:
+    hottest_city = None
+    
+    for record in data_generator:
         values = record["hourly"]["temperature_2m"]
         for value in values:
             if value > max_value:
                 max_value = value
-                city = record["city"]
-    return {"City": city, "Max temp": max_value}
+                hottest_city = record["city"]
+    
+    return {"City": hottest_city, "Max temp": max_value}
 
 def mini_coldest_city(data: list[dict[str, Any]]) -> Union[int, float]:
     """
@@ -553,3 +582,24 @@ def mini_coldest_city(data: list[dict[str, Any]]) -> Union[int, float]:
                 min_value = value
                 city = record["city"]
     return {"City": city, "Max temp": min_value}
+
+def mini_temp_between(data: list[dict[str, Any]], min: Union[int, float], max: Union[int, float]):
+    """
+    List cities where the temperature is between two numbers.
+    
+    Args:
+        data (list[dict[str, Any]]): List of weather data returned from the meteo API.
+        min: The bottom end of the range to check. 
+        max: The top end of the range to check. 
+    
+    Return:
+        list[str]: A list of all of the cities that have a temperature between the min and max. 
+    """
+    cities = []
+    for record in data:
+        values = record["hourly"]["temperature_2m"]
+        for value in values:
+            if value < max and value > min:
+                cities.append(record["city"])
+                break
+    return cities
