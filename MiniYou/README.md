@@ -1,7 +1,11 @@
 # bbk-bda-project1
 --- 
 # Part A
-Write commments on each data set #TODO
+### Sleep data
+The sleep dataset has 374 records and 13 columns. The data set is 49% female and 51% male. The average age is 42.18 and the most common occupation is a Nurse. Of these nurses, three have insomnia. 
+
+### Health data
+The health dataset has 1000 records and 16 columns. The data set is 48% female and 52% male. The average age is 49.86 and the most common amount of alcohol to drink is 3 units.
 ---
 # Part B
 ### B1  mini_len
@@ -157,7 +161,7 @@ print(mini_len({"Data": health_data, "Column": "Daily_Steps"}))`
 `{'Conditions': {'Gender': 'Female', 'Hours_of_Sleep': 7.4}, 'Count': 8}`
 ---
 # Part D
-### BD1 mini_get_weather_data_yeild
+### BD1 mini_get_weather_data_stream
 Functions to be used based on their purpose. For streaming the data use yield for sorting/searching etc. use the return function. 
 **IO**
 *Usage*: 
@@ -165,7 +169,10 @@ Functions to be used based on their purpose. For streaming the data use yield fo
 for result in mini_get_weather_data_yield(cities): 
     print(result)
 ```
-*Output:* #TODO
+*Output Example:*
+```
+{'latitude': 40.710335, 'longitude': -73.99309, 'generationtime_ms': 0.042438507080078125, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 32.0, 'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'}, 'hourly': {'time': ['2025-06-16T00:00', '2025-06-16T01:00', '2025-06-16T02:00', '2025-06-16T03:00', '2025-06-16T04:00', '2025-06-16T05:00', '2025-06-16T06:00', '2025-06-16T07:00', '2025-06-16T08:00', '2025-06-16T09:00', '2025-06-16T10:00', '2025-06-16T11:00', '2025-06-16T12:00', '2025-06-16T13:00', '2025-06-16T14:00', '2025-06-16T15:00', '2025-06-16T16:00', '2025-06-16T17:00', '2025-06-16T18:00', '2025-06-16T19:00', '2025-06-16T20:00', '2025-06-16T21:00', '2025-06-16T22:00', '2025-06-16T23:00', '2025-06-17T00:00', '2025-06-17T01:00', '2025-06-17T02:00', '2025-06-17T03:00', '2025-06-17T04:00', '2025-06-17T05:00', '2025-06-17T06:00', '2025-06-17T07:00', '2025-06-17T08:00', '2025-06-17T09:00', '2025-06-17T10:00', '2025-06-17T11:00', '2025-06-17T12:00', '2025-06-17T13:00', '2025-06-17T14:00', '2025-06-17T15:00', '2025-06-17T16:00', '2025-06-17T17:00', '2025-06-17T18:00', '2025-06-17T19:00', '2025-06-17T20:00', '2025-06-17T21:00', '2025-06-17T22:00', '2025-06-17T23:00', '2025-06-18T00:00', '2025-06-18T01:00', '2025-06-18T02:00', '2025-06-18T03:00', '2025-06-18T04:00', '2025-06-18T05:00', '2025-06-18T06:00', '2025-06-18T07:00', '2025-06-18T08:00', '2025-06-18T09:00', '2025-06-18T10:00', '2025-06-18T11:00', '2025-06-18T12:00', '2025-06-18T13:00', '2025-06-18T14:00', '2025-06-18T15:00', '2025-06-18T16:00', '2025-06-18T17:00', '2025-06-18T18:00', '2025-06-18T19:00', '2025-06-18T20:00', '2025-06-18T21:00', '2025-06-18T22:00', '2025-06-18T23:00', '2025-06-19T00:00', '2025-06-19T01:00', '2025-06-19T02:00', '2025-06-19T03:00', '2025-06-19T04:00', '2025-06-19T05:00', '2025-06-19T06:00', '2025-06-19T07:00', '2025-06-19T08:00', '2025-06-19T09:00', '2025-06-19T10:00', '2025-06-19T11:00', '2025-06-19T12:00', '2025-06-19T13:00', '2025-06-19T14:00', '2025-06-19T15:00', '2025-06-19T16:00', '2025-06-19T17:00', '2025-06-19T18:00', '2025-06-19T19:00', '2025-06-19T20:00', '2025-06-19T21:00', '2025-06-19T22:00', '2025-06-19T23:00', '2025-06-20T00:00', '2025-06-20T01:00', '2025-06-20T02:00', '2025-06-20T03:00', '2025-06-20T04:00', '2025-06-20T05:00', '2025-06-20T06:00', '2025-06-20T07:00', '2025-06-20T08:00', '2025-06-20T09:00', '2025-06-20T10:00', '2025-06-20T11:00', '2025-06-20T12:00', '2025-06-20T13:00', '2025-06-20T14:00', '2025-06-20T15:00', '2025-06-20T16:00', '2025-06-20T17:00', '2025-06-20T18:00', '2025-06-20T19:00', '2025-06-20T20:00', '2025-06-20T21:00', '2025-06-20T22:00', '2025-06-20T23:00', '2025-06-21T00:00', '2025-06-21T01:00', '2025-06-21T02:00', '2025-06-21T03:00', '2025-06-21T04:00', '2025-06-21T05:00', '2025-06-21T06:00', '2025-06-21T07:00', '2025-06-21T08:00', '2025-06-21T09:00', '2025-06-21T10:00', '2025-06-21T11:00', '2025-06-21T12:00', '2025-06-21T13:00', '2025-06-21T14:00', '2025-06-21T15:00', '2025-06-21T16:00', '2025-06-21T17:00', '2025-06-21T18:00', '2025-06-21T19:00', '2025-06-21T20:00', '2025-06-21T21:00', '2025-06-21T22:00', '2025-06-21T23:00', '2025-06-22T00:00', '2025-06-22T01:00', '2025-06-22T02:00', '2025-06-22T03:00', '2025-06-22T04:00', '2025-06-22T05:00', '2025-06-22T06:00', '2025-06-22T07:00', '2025-06-22T08:00', '2025-06-22T09:00', '2025-06-22T10:00', '2025-06-22T11:00', '2025-06-22T12:00', '2025-06-22T13:00', '2025-06-22T14:00', '2025-06-22T15:00', '2025-06-22T16:00', '2025-06-22T17:00', '2025-06-22T18:00', '2025-06-22T19:00', '2025-06-22T20:00', '2025-06-22T21:00', '2025-06-22T22:00', '2025-06-22T23:00'], 'temperature_2m': [16.6, 15.1, 15.1, 15.1, 15.4, 15.4, 15.1, 15.4, 15.4, 15.5, 15.7, 16.0, 16.2, 16.3, 16.7, 17.9, 18.3, 19.7, 20.7, 22.2, 22.1, 21.9, 21.0, 20.5, 20.0, 19.8, 19.3, 17.5, 17.6, 17.6, 17.5, 17.6, 17.4, 17.2, 17.1, 17.0, 17.2, 17.6, 17.7, 17.8, 18.4, 18.0, 18.1, 18.2, 18.2, 18.0, 18.0, 17.6, 17.7, 17.7, 17.5, 17.5, 17.6, 17.6, 17.9, 19.6, 19.8, 19.7, 19.9, 20.4, 20.6, 22.8, 22.3, 24.6, 26.4, 28.0, 28.8, 28.3, 26.4, 24.5, 24.4, 23.3, 23.2, 22.7, 23.3, 23.2, 22.6, 22.3, 22.2, 22.1, 21.9, 21.7, 21.7, 22.5, 23.7, 25.3, 27.3, 29.1, 30.6, 31.4, 32.2, 32.6, 32.3, 31.7, 31.4, 31.2, 29.6, 23.4, 21.8, 21.9, 22.0, 21.7, 21.5, 21.3, 21.0, 20.7, 20.8, 20.3, 20.6, 21.9, 23.6, 25.0, 26.3, 27.4, 28.4, 29.1, 29.4, 29.1, 27.5, 27.8, 26.5, 25.6, 24.7, 23.8, 23.0, 22.2, 21.4, 20.5, 19.5, 18.9, 18.8, 19.0, 19.6, 20.7, 22.2, 23.6, 24.9, 26.1, 27.0, 27.6, 28.0, 28.0, 27.6, 26.9, 26.1, 25.2, 24.2, 23.3, 22.9, 22.6, 22.3, 21.9, 21.5, 21.3, 21.4, 21.7, 22.4, 23.9, 25.8, 27.5, 28.9, 30.1, 31.0, 31.6, 31.9, 31.9, 31.5, 30.7]}, 'daily_units': {'time': 'iso8601', 'temperature_2m_max': '°C', 'temperature_2m_min': '°C'}, 'daily': {'time': ['2025-06-16', '2025-06-17', '2025-06-18', '2025-06-19', '2025-06-20', '2025-06-21', '2025-06-22'], 'temperature_2m_max': [22.2, 20.0, 28.8, 32.6, 29.6, 28.0, 31.9], 'temperature_2m_min': [15.1, 17.0, 17.5, 21.7, 20.3, 18.8, 21.3]}, 'city': 'New York'}
+```
 
 **Big-O**
 Time: #TODO
@@ -190,40 +197,76 @@ Space:  #TODO
 **IO**
 *Usage*:
 ```
-weather_data = mini_get_weather_data(cities)
+weather_data = list(mini_get_weather_data_stream(cities))
 hottest = mini_hottest_city(weather_data)
 print(hottest)
 ```
-*Output:* #TODO
+*Output:* `{'City': 'Madrid', 'Hottest temp': 35.7}`
 
 **Big-O**
-Time: #TODO
-Space:  #TODO
+Time: O(n) - iterates over all the cities.
+Space:  O(1)  - retains the max.
 
 **Return or yield**
- #TODO
+Yields the cities and returns the max. 
 
 ### D3 mini_get_coldest_city
 **IO**
 *Usage*:
 ```
-weather_data = mini_get_weather_data(cities)
+weather_data = list(mini_get_weather_data_stream(cities))
 coldest = mini_coldest_city(weather_data)
 print(coldest)
 ```
-*Output:* #TODO
+*Output:* `{'City': 'Sydney', 'Coldest temp': 2.7}`
 
 **Big-O**
-Time: #TODO
-Space:  #TODO
+Time: O(n) - iterates over all the cities.
+Space:  O(1)  - retains the min.
 
 **Return or yield**
- #TODO
+Yields the cities and returns the min. 
 
+### D4 mini_temp_between
+**IO**
+*Usage*:
+```
+weather_data = list(mini_get_weather_data_stream(cities))
+for city in mini_temp_between(weather_data, 20, 30):
+    print(city)
+```
+*Output:*
+```
+New York
+London
+Paris
+Tokyo
+```
 
+**Big-O**
+Time: O(n) - iterates over all the cities.
+Space:  O(1)  - retains the min.
 
+**Return or yield**
+Yields the cities and returns the min. 
 
+### D5 mini_biggest_temp_diff
+**IO**
+*Usage*:
+```
+mini_biggest_temp_diff(weather_data)
+```
+*Output:*
+```
+[{'city': 'Madrid', 'difference': 15.600000000000001}, {'city': 'Lisbon', 'difference': 14.7}, {'city': 'Rome', 'difference': 13.899999999999999}, {'city': 'Cairo', 'difference': 13.400000000000002}, {'city': 'Sydney', 'difference': 13.0}]
+```
 
+**Big-O**
+Time: O(n^2) - because of the bubble sort.
+Space:  O(1)  - doesn't take up extra space. 
+
+**Return or yield**
+Returns the list
 
 ---
 # Additional Functions
@@ -264,23 +307,3 @@ Space: O(n) - modifies data in place.
 **Big-O**
 Time: O(n) - iterates through each data row to find max/min.
 Space: O(1) - does not require additional space.
-
-### XX  xxx
-**IO**
-*Usage*:
-*Output:* 
-
-**Big-O**
-Time: 
-Space: 
-
-
-
-### XX  xxx
-**IO**
-*Usage*:
-*Output:* 
-
-**Big-O**
-Time: 
-Space: 
