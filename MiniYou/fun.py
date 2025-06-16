@@ -98,7 +98,7 @@ def mini_load_csv_dict(input_dict: dict[str, str]) -> list[dict[str, str]]:
     return data
 
 
-def mini_load_csv_yield(filename: str) -> dict[str, str]:
+def mini_load_csv_yield(filename: str) -> Generator[dict[str, str], None, None]:
     """
     Loads a CSV file and yields each row as a dictionary.
 
@@ -110,7 +110,7 @@ def mini_load_csv_yield(filename: str) -> dict[str, str]:
             Example: [{'column1': 'value1', 'column2': 'value2'}, ...]
 
     Raises:
-        FileNotFoundErrror: If file is not found.
+        FileNotFoundError: If file is not found.
 
     Example:
         mini_load_csv_yield({"filename": "myproject/mydata.csv"})
@@ -158,7 +158,7 @@ def mini_len(input_dict: dict[str, str]) -> dict[str, Any]:
             "Exists": True,
             "Column": column,
             "NumRecords": records,
-            "NumMissing": missing
+            "NumMissing": missing,
         }
     else:
         return {"Exists": False}
@@ -383,7 +383,7 @@ def mini_min(data: list | dict, column=None) -> int | float:
         column: Column name (only needed for list of dicts)
 
     Returns:
-        int | float: the maximum value found.
+        int | float: the minimum value found.
 
     Example:
         mini_min([1,2,3], None)
@@ -441,14 +441,16 @@ def mini_stats(input_dict: dict[str, Any]) -> dict[str, Any]:
     return output_dict
 
 
-def mini_bubble_sort(data: list[dict[str, Any]], column: str, inplace: bool = True) -> dict[str, Any]:
+def mini_bubble_sort(
+    data: list[dict[str, Any]], column: str, inplace: bool = True
+) -> dict[str, Any]:
     """
     Sorts the values of a specified column in a list of dictionaries using bubble sort.
 
     Args:
         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a record.
         column (str): The column name to sort values by.
-        inplace (bool): If True sorts the data in place, if False returns the sorted list of data. 
+        inplace (bool): If True sorts the data in place, if False returns the sorted list of data.
 
     Returns:
         dict[str, Any]: A dictionary containing the column name and the sorted list of values.
@@ -460,7 +462,7 @@ def mini_bubble_sort(data: list[dict[str, Any]], column: str, inplace: bool = Tr
         mini_bubble_sort([{'person': 'Alice', 'DailySteps': 200}, {'person': 'Bob', 'DailySteps': 300}], 'DailySteps')
         {'Column': 'DailySteps','Sorted data': [{'person': 'Alice', 'DailySteps': 200}, {'person': 'Bob', 'DailySteps': 300}]}
     """
- 
+
     n = mini_simple_len(data)
     for i in range(n):
         for j in range(0, n - i - 1):
@@ -472,15 +474,16 @@ def mini_bubble_sort(data: list[dict[str, Any]], column: str, inplace: bool = Tr
     if inplace:
         sorted_data = data  # Sorted list of dicts
     else:
-        sorted_data = [record[column] for record in data if column in record]  # Sorted list of values
+        sorted_data = [
+            record[column] for record in data if column in record
+        ]  # Sorted list of values
 
-    return {
-        "Column": column,
-        "Sorted data": sorted_data
-    }
+    return {"Column": column, "Sorted data": sorted_data}
 
 
-def mini_value_exists(sorted_data: list[int | float], value: int | float) -> dict[str, str | bool]:
+def mini_value_exists(
+    sorted_data: list[int | float], value: int | float
+) -> dict[str, str | bool]:
     """
     Checks if a value exists in a list of data using binary search.
 
@@ -544,35 +547,9 @@ def mini_frequency_table(input_dict: dict[str, str]) -> dict:
     return {column: results}
 
 
-def mini_get_weather_data(cities_dict: dict[str: str]) -> dict[str, str | float]:
-    """
-    Takes an input dictionary and pulls data from the open-meteo api.
-
-    Args:
-        input_dict: Input dictionary which includes the city, lat and lon.
-    Returns:
-        list(dict): Response data for each city.
-            Example: {'latitude': 40.710335, 'longitude': -73.99309, 'generationtime_ms': 0.028967857360839844, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 32.0, 'hourly_units': {'time': 'iso8601', 'temperature_2m': '°C'}, 'hourly': {'time': ['2025-06-06T00:00'}}.
-    Example:
-        mini_get_weather_data([{"city": "New York", "country": "USA", "lat": 40.7128, "lon": -74.0060}])
-    """
-    url = 'https://api.open-meteo.com/v1/forecast'
-    responses = []
-    for place in cities_dict:
-        params = {
-            "latitude": place.get("lat"),
-            "longitude": place.get("lon"),
-            "hourly": "temperature_2m",
-        }
-        response = requests.get(url, params=params, timeout=15)
-        response_dict = response.json()
-        response_dict["city"] = place["city"]
-        responses.append(response_dict)
-        time.sleep(1)
-    return responses
-
-
-def mini_get_weather_data_stream(cities_dict: dict[str: str]):
+def mini_get_weather_data_stream(
+    cities: dict[str, Any],
+) -> Generator[dict[str, Any], None, None]:
     """
     Takes an input dictionary and pulls current temperature data from the open-meteo api. This function should be used when the data should be streamed.
 
@@ -588,22 +565,21 @@ def mini_get_weather_data_stream(cities_dict: dict[str: str]):
         mini_get_weather_data_stream([{'city': 'Lagos','country': 'Nigeria','lat': 6.5244,'lon': 3.3792}])
         {'city': 'Lagos','country': 'Nigeria','lat': 6.5244,'lon': 3.3792,'current_temp': 29.2,'today_max': 29.6,'today_min': 25.6}
     """
-    url = 'https://api.open-meteo.com/v1/forecast'
-    for place in cities_dict:
+    url = "https://api.open-meteo.com/v1/forecast"
+    for place in cities:
         params = {
             "latitude": place.get("lat"),
             "longitude": place.get("lon"),
             "current": "temperature_2m",
             "daily": ["temperature_2m_max", "temperature_2m_min"],
-            "forecast_days": 1
+            "forecast_days": 1,
         }
         try:
             response = requests.get(url, params=params, timeout=15)
             response_dict = response.json()
-            response_dict = response.json()
-            place['current_temp'] = response_dict['current']['temperature_2m']
-            place['today_max'] = response_dict['daily']["temperature_2m_max"][0]
-            place['today_min'] = response_dict['daily']["temperature_2m_min"][0]
+            place["current_temp"] = response_dict["current"]["temperature_2m"]
+            place["today_max"] = response_dict["daily"]["temperature_2m_max"][0]
+            place["today_min"] = response_dict["daily"]["temperature_2m_min"][0]
             yield place
         except requests.exceptions.RequestException as e:
             print(f"Error fetching data for {place['city']}: {e}")
@@ -616,13 +592,15 @@ def mini_hottest_city(weather_data: list[dict]) -> dict[str, str | float]:
     Returns the maximum temperature and city from existing weather data.
 
     Args:
-        weather data: #TODO.
+        weather data(list[dict]): Weather data provided as a list.
 
     Returns:
         dict: Dictionary with the hottest city and temperature.
 
     Example:
+        weather_data = list(mini_get_weather_data_stream(cities))
         mini_hottest_city(weather_data)
+        {'City': 'Madrid', 'Hottest temp': 36.0}
 
     """
     max_temp = float("-inf")
@@ -637,18 +615,21 @@ def mini_hottest_city(weather_data: list[dict]) -> dict[str, str | float]:
     return {"City": hottest_city, "Hottest temp": max_temp}
 
 
-def mini_coldest_city(weather_data) -> dict[str, str | float]:
+def mini_coldest_city(weather_data: list[dict]) -> dict[str, str | float]:
     """
     Returns the maximum value in a specified column of a list of dictionaries.
 
     Args:
-        weather_data (list[dict[str, Any]]): # TODO
-            Example: [{'column1': 'value1', 'column2': 23}, ...]
-
+        weather_data (list[dict[str, Any]]): Weather data retrieved from the API.
         column (str): The column name to find the maximum value for.
 
     Returns:
         int | float: The maximum value found in the specified column.
+
+    Example:
+        weather_data = list(mini_get_weather_data_stream(cities))
+        mini_coldest_city(weather_data)
+        {'City': 'Sydney', 'Coldest temp': 2.7}
     """
     min_temp = float("inf")
     coldest_city = None
@@ -674,6 +655,10 @@ def mini_temp_between(data: list[dict[str, Any]], min: int | float, max: int | f
 
     Return:
         list[str]: A list of all of the cities that have a temperature between the min and max.
+
+    Example:
+        mini_temp_between(weather_data, 20, 30)
+        London, Paris
     """
     for record in data:
         value = record["current_temp"]
@@ -681,248 +666,22 @@ def mini_temp_between(data: list[dict[str, Any]], min: int | float, max: int | f
             yield record["city"]
 
 
-def mini_biggest_temp_diff(data: list[dict[str, any]]) -> dict[str, str | float]:
+def mini_biggest_temp_diff(data: list[dict[str, Any]]) -> dict[str, str | float]:
     """
+    Lists the top five cities with the biggest temperature difference.
+
     Args:
         data (list[dict[str, Any]]): List of weather data returned from the meteo API.
-    
+
     Returns:
         dict: Containing the top five cities and their temperature difference.
 
     """
     for record in data:
-        record['temperature_diff'] = round(record['today_max'] - record['today_min', 2])
+        record["temperature_diff"] = round(record["today_max"] - record["today_min"], 2)
 
     sorted_result = mini_bubble_sort(data, "temperature_diff", True)["Sorted data"]
     top5 = []
     for rec in sorted_result[-5:][::-1]:  # take last 5 and reverse for descending
         top5.append({"city": rec["city"], "difference": rec["temperature_diff"]})
     return top5
-
-# def biggest_temp_difference(data_generator):
-#     city_ranges = []
-
-#     for record in data_generator:
-#         temperatures = record["hourly"]["temperature_2m"]
-
-#         city_min = mini_min(temperatures)
-#         city_max = mini_max(temperatures)
-
-#         if city_min is not None and city_max is not None:
-#             temp_range = city_max - city_min
-#             city_ranges.append({
-#                 "City": record["city"],
-#                 "Min_Temp": city_min,
-#                 "Max_Temp": city_max,
-#                 "Range": temp_range
-#             })
-#     def mini_max(data, column=None) -> Union[int, float]:
-#         """
-#         Function to find the max of either a list or a dictionary.
-
-#         Args:
-#             data: Either list of dicts OR simple list of values
-#             column: Column name (only needed for list of dicts)
-
-#         Returns:
-#             int | float: the maximum value found.
-#         """
-#     max_value = float("-inf")
-
-#     if column is None:
-#         # Simple list of values
-#         for value in data:
-#             if value not in [None, "", "None"] and isinstance(value, (int, float)):
-#                 if value > max_value:
-#                     max_value = value
-#     else:
-#         # List of dictionaries
-#         for record in data:
-#             value = record[column]
-#             if value not in [None, "", "None"] and isinstance(value, (int, float)):
-#                 if value > max_value:
-#                     max_value = value
-
-#     return max_value if max_value != float("-inf") else None
-
-
-# def top5_highest_temp_range(data_generator) -> list:
-#     """
-#     Returns the top 5 cities with the highest temperature difference (max - min).
-#     Optimized to O(n) time complexity using a min-heap approach.
-
-#     Args:
-#         data_generator: Generator/iterator of city weather data where each record contains:
-#             - "city": city name
-#             - "hourly": dict with "temperature_2m" key containing list of temperatures
-
-#     Returns:
-#         list: Top 5 cities sorted by temperature range (highest first)
-#               Each item is a dict with keys: "City", "Min_Temp", "Max_Temp", "Range"
-#     """
-#     # Keep track of top 5 using a fixed-size array
-#     top5 = []
-
-#     for record in data_generator:
-#         temperatures = record["hourly"]["temperature_2m"]
-
-#         city_min = mini_min(temperatures)
-#         city_max = mini_max(temperatures)
-
-#         if city_min is not None and city_max is not None:
-#             temp_range = city_max - city_min
-#             current_city = {
-#                 "City": record["city"],
-#                 "Min_Temp": city_min,
-#                 "Max_Temp": city_max,
-#                 "Range": temp_range
-#             }
-
-#             # If we have less than 5 cities, just add it
-#             if len(top5) < 5:
-#                 top5.append(current_city)
-#             else:
-#                 # Find the city with minimum range in our top5
-#                 min_range_idx = 0
-#                 min_range = top5[0]["Range"]
-
-#                 for i in range(1, 5):
-#                     if top5[i]["Range"] < min_range:
-#                         min_range = top5[i]["Range"]
-#                         min_range_idx = i
-
-#                 # If current city has higher range than the minimum in top5, replace it
-#                 if temp_range > min_range:
-#                     top5[min_range_idx] = current_city
-
-#             # Manual sort of the final top5 array (insertion sort for small array)
-#             for i in range(1, len(top5)):
-#                 key = top5[i]
-#                 j = i - 1
-
-#                 # Move elements with smaller range to the right
-#                 while j >= 0 and top5[j]["Range"] < key["Range"]:
-#                     top5[j + 1] = top5[j]
-#                     j -= 1
-
-#                 top5[j + 1] = key
-
-# def mini_hottest_city(data: list[dict[str, Any]]) -> Union[int, float]:
-#     """
-#     Returns the maximum value in a specified column of a list of dictionaries.
-
-#     Args:
-#         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
-#             Example: [{'column1': 'value1', 'column2': 23}, ...]
-
-#         column (str): The column name to find the maximum value for.
-#             Example: "Daily Steps"
-
-#     Returns:
-#         int | float: The maximum value found in the specified column.
-#     """
-#     max_value = float("-inf")
-#     for record in data:
-#         values = record["hourly"]["temperature_2m"]
-#         for value in values:
-#             if value > max_value:
-#                 max_value = value
-#                 city = record["city"]
-#     return {"City": city, "Max temp": max_value}
-
-# def mini_hottest_city(data_generator) -> dict[str: str]:
-#     """
-#     Returns the maximum temperature and city from a generator of weather data.
-
-#     Args:
-#         data_generator: A generator that yields weather data dictionaries.
-
-#     Returns:
-#         dict: Dictionary with the hottest city and temperature.
-#     """
-#     max_value = float("-inf")
-#     hottest_city = None
-
-#     for record in data_generator:
-#         values = record["hourly"]["temperature_2m"]
-#         for value in values:
-#             if value > max_value:
-#                 max_value = value
-#                 hottest_city = record["city"]
-
-#     return {"City": hottest_city, "Max temp": max_value}
-
-# def mini_min(data: list[dict[str, Any]], column: str) -> Union[int, float]:
-#     """
-#     Returns the minimum value in a specified column of a list of dictionaries.
-
-#     Args:
-#         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
-#             Example: [{'column1': 'value1', 'column2': 23}, ...]
-
-#         column (str): The column name to find the minimum value for.
-#             Example: "Daily Steps"
-#     Returns:
-#         int | float: The minimum value found in the specified column.
-#     """
-#     min_value = float("-inf")
-#     for record in data:
-#         value = record[column]
-#         if value < min_value:
-#                 min_value = value
-
-#     return min_value if min_value != float("-inf") else None
-
-
-# def mini_max(data: list[dict[str, Any]], column: str) -> Union[int, float]:
-#     """
-#     Returns the maximum value in a specified column of a list of dictionaries.
-
-#     Args:
-#         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a row in the data.
-#             Example: [{'column1': 'value1', 'column2': 23}, ...]
-
-#         column (str): The column name to find the maximum value for.
-#             Example: "Daily Steps"
-
-#     Returns:
-#         int | float: The maximum value found in the specified column.
-#     """
-#     max_value = float("-inf")
-#     for record in data:
-#         value = record[column]
-#         if value not in [None, "", "None"] and isinstance(value, (int, float)):
-#             if value > max_value:
-#                 max_value = value
-
-#     return max_value if max_value != float("-inf") else None
-
-
-# def mini_min(data, column=None) -> Union[int, float]:
-#     """
-#     Function to find the min of either a list or a dictionary.
-
-#     Args:
-#         data: Either list of dicts OR simple list of values
-#         column: Column name (only needed for list of dicts)
-
-#     Returns:
-#         int | float: the minimum value found.
-#     """
-#     min_value = float("inf")  # Fixed: use positive infinity for minimum
-
-#     if column is None:
-#         # Simple list of values
-#         for value in data:
-#             if value not in [None, "", "None"] and isinstance(value, (int, float)):
-#                 if value < min_value:
-#                     min_value = value
-#     else:
-#         # List of dictionaries
-#         for record in data:
-#             value = record[column]
-#             if value not in [None, "", "None"] and isinstance(value, (int, float)):
-#                 if value < min_value:
-#                     min_value = value
-
-#     return min_value if min_value != float("inf") else None

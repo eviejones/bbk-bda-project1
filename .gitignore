@@ -1,5 +1,6 @@
 # Ignore virtual environment
 .bbk/
+.bbk-new/
 
 # Ignore other common files
 __pycache__/
