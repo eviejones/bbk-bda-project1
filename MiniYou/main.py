@@ -15,7 +15,14 @@ for row in sleep_data_yield:
     print(row)
     break  # Print only the first row for demonstration
 
+# Information about the dataset
+mini_len({"Data": sleep_data, "Column": "Person ID"})
+mini_count({"Data": sleep_data, "Column": "Gender", "Value": "Female"})
+mini_frequency_table(({"Data": sleep_data, "Column": "Occupation"}))
+mini_count_match({"Data": sleep_data, "Occupation": "Nurse", "Sleep Disorder": 'Insomnia'})
+
 # Part B
+
 # Test mini_len
 print(mini_len({"Data": sleep_data, "Column": "Sleep Disorder"}))
 
@@ -31,7 +38,7 @@ print(mini_count({"Data": sleep_data, "Column": "BMI Category", "Value": "Obeees
 print(mini_count_match({"Data": sleep_data, "Occupation": "Doctor", "Heart Rate": 72}))
 
 # Test mini_average
-print(mini_average(({"Data": sleep_data, "Column": "Daily Steps", "Value": 10000})))
+print(mini_average(({"Data": sleep_data, "Column": "Daily Steps"})))
 
 # Test mini_extract_metrics
 for teacher in mini_extract_metrics({"Data": sleep_data, "Col1":"Person ID", "Col2":"Quality of Sleep","Col3":"Physical Activity Level"}):
@@ -39,11 +46,11 @@ for teacher in mini_extract_metrics({"Data": sleep_data, "Col1":"Person ID", "Co
     break # For testing only
 
 # Test mini_bubble_sort
-print(mini_bubble_sort(sleep_data, "Daily Steps"))
+print(mini_bubble_sort(sleep_data, "Daily Steps", False))
 
 # Test mini_value_exists
-sorted_data = mini_bubble_sort(sleep_data, "Daily Steps")
-sorted_data = sorted_data.get("Sorted data")
+sorted_data = mini_bubble_sort(sleep_data, "Daily Steps", False)
+sorted_data = sorted_data["Sorted data"]
 print(mini_value_exists(sorted_data, 3500))
 
 # Test mini_frequency_table
@@ -101,15 +108,17 @@ cities = [
 ]
 
 # Test mini_get_weath_data_yield
-# for result in mini_get_weather_data_stream(cities):
-#     print(result)
+for result in mini_get_weather_data_stream(cities):
+    print(result)
     
 # Test hottest and coldest
-weather_data = mini_get_weather_data(cities)
-hottest = mini_hottest_city(weather_data)
-print(hottest)
-coldest = mini_coldest_city(weather_data)
-print(coldest)
+weather_data = list(mini_get_weather_data_stream(cities))
+print(mini_hottest_city(weather_data))
+print(mini_coldest_city(weather_data))
 
 # Test mini_temp_between
-print(mini_temp_between(weather_data, 20, 30))
+for result in mini_temp_between(weather_data, 20, 30):
+    print(result)
+    
+# Test mini_biggest_temp_diff
+print(mini_biggest_temp_diff(weather_data))

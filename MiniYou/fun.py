@@ -1,7 +1,7 @@
 """Custom Python functions for use in the project."""
 
 import csv
-from typing import Any
+from typing import Any, Generator
 import requests
 import time
 
@@ -441,13 +441,14 @@ def mini_stats(input_dict: dict[str, Any]) -> dict[str, Any]:
     return output_dict
 
 
-def mini_bubble_sort(data: list[dict[str, Any]], column: str) -> dict[str, Any]:
+def mini_bubble_sort(data: list[dict[str, Any]], column: str, inplace: bool = True) -> dict[str, Any]:
     """
     Sorts the values of a specified column in a list of dictionaries using bubble sort.
 
     Args:
         data (list[dict[str, Any]]): A list of dictionaries where each dictionary represents a record.
         column (str): The column name to sort values by.
+        inplace (bool): If True sorts the data in place, if False returns the sorted list of data. 
 
     Returns:
         dict[str, Any]: A dictionary containing the column name and the sorted list of values.
@@ -457,8 +458,9 @@ def mini_bubble_sort(data: list[dict[str, Any]], column: str) -> dict[str, Any]:
 
     Example:
         mini_bubble_sort([{'person': 'Alice', 'DailySteps': 200}, {'person': 'Bob', 'DailySteps': 300}], 'DailySteps')
-        {'Column': 'DailySteps', 'Sorted data': [200, 300]}
+        {'Column': 'DailySteps','Sorted data': [{'person': 'Alice', 'DailySteps': 200}, {'person': 'Bob', 'DailySteps': 300}]}
     """
+ 
     n = mini_simple_len(data)
     for i in range(n):
         for j in range(0, n - i - 1):
@@ -466,13 +468,16 @@ def mini_bubble_sort(data: list[dict[str, Any]], column: str) -> dict[str, Any]:
                 raise ValueError(f"Column '{column}' does not contain numeric values.")
             if data[j][column] > data[j + 1][column]:
                 data[j], data[j + 1] = data[j + 1], data[j]
-    sorted_values = [record[column] for record in data if column in record]
 
-    output_dict = {
+    if inplace:
+        sorted_data = data  # Sorted list of dicts
+    else:
+        sorted_data = [record[column] for record in data if column in record]  # Sorted list of values
+
+    return {
         "Column": column,
-        "Sorted data": sorted_values
+        "Sorted data": sorted_data
     }
-    return output_dict
 
 
 def mini_value_exists(sorted_data: list[int | float], value: int | float) -> dict[str, str | bool]:
@@ -567,9 +572,9 @@ def mini_get_weather_data(cities_dict: dict[str: str]) -> dict[str, str | float]
     return responses
 
 
-def mini_get_weather_data_stream(cities_dict: dict[str: str]) -> dict[str, str | float]:
+def mini_get_weather_data_stream(cities_dict: dict[str: str]):
     """
-    Takes an input dictionary and pulls temperature data from the open-meteo api. This function should be used when the data should be streamed.
+    Takes an input dictionary and pulls current temperature data from the open-meteo api. This function should be used when the data should be streamed.
 
     Args:
         cities_dict: Input dictionary which includes the city, lat and lon.
@@ -580,22 +585,26 @@ def mini_get_weather_data_stream(cities_dict: dict[str: str]) -> dict[str, str |
         dict: Response data for each city as it's retrieved.
 
     Example:
-        mini_get_weather_data_stream([{"city": "New York", "country": "USA", "lat": 40.7128, "lon": -74.0060}])
+        mini_get_weather_data_stream([{'city': 'Lagos','country': 'Nigeria','lat': 6.5244,'lon': 3.3792}])
+        {'city': 'Lagos','country': 'Nigeria','lat': 6.5244,'lon': 3.3792,'current_temp': 29.2,'today_max': 29.6,'today_min': 25.6}
     """
     url = 'https://api.open-meteo.com/v1/forecast'
-
     for place in cities_dict:
         params = {
             "latitude": place.get("lat"),
             "longitude": place.get("lon"),
-            "hourly": "temperature_2m",
-            "daily": ["temperature_2m_max", "temperature_2m_min"]
+            "current": "temperature_2m",
+            "daily": ["temperature_2m_max", "temperature_2m_min"],
+            "forecast_days": 1
         }
         try:
             response = requests.get(url, params=params, timeout=15)
             response_dict = response.json()
-            response_dict["city"] = place["city"]
-            yield response_dict
+            response_dict = response.json()
+            place['current_temp'] = response_dict['current']['temperature_2m']
+            place['today_max'] = response_dict['daily']["temperature_2m_max"][0]
+            place['today_min'] = response_dict['daily']["temperature_2m_min"][0]
+            yield place
         except requests.exceptions.RequestException as e:
             print(f"Error fetching data for {place['city']}: {e}")
             continue
@@ -620,14 +629,12 @@ def mini_hottest_city(weather_data: list[dict]) -> dict[str, str | float]:
     hottest_city = None
 
     for record in weather_data:
-        temperatures = record["hourly"]["temperature_2m"]
-        city_max = mini_max(temperatures)
-
+        city_max = record["today_max"]
         if city_max is not None and city_max > max_temp:
             max_temp = city_max
             hottest_city = record["city"]
 
-    return {"City": hottest_city, "Max temp": max_temp}
+    return {"City": hottest_city, "Hottest temp": max_temp}
 
 
 def mini_coldest_city(weather_data) -> dict[str, str | float]:
@@ -647,14 +654,13 @@ def mini_coldest_city(weather_data) -> dict[str, str | float]:
     coldest_city = None
 
     for record in weather_data:
-        temperatures = record["hourly"]["temperature_2m"]
-        city_min = mini_min(temperatures)
+        city_min = record["today_min"]
 
         if city_min is not None and city_min < min_temp:
             min_temp = city_min
             coldest_city = record["city"]
 
-    return {"City": coldest_city, "Min temp": min_temp}
+    return {"City": coldest_city, "Coldest temp": min_temp}
 
 
 def mini_temp_between(data: list[dict[str, Any]], min: int | float, max: int | float):
@@ -670,34 +676,27 @@ def mini_temp_between(data: list[dict[str, Any]], min: int | float, max: int | f
         list[str]: A list of all of the cities that have a temperature between the min and max.
     """
     for record in data:
-        values = record["hourly"]["temperature_2m"]
-        for value in values:
-            if value < max and value > min:
-                yield record["city"]
-                break
+        value = record["current_temp"]
+        if value < max and value > min:
+            yield record["city"]
 
 
-def mini_biggest_temp_diff(data: list[dict[str, Any]]):
+def mini_biggest_temp_diff(data: list[dict[str, any]]) -> dict[str, str | float]:
+    """
+    Args:
+        data (list[dict[str, Any]]): List of weather data returned from the meteo API.
+    
+    Returns:
+        dict: Containing the top five cities and their temperature difference.
+
+    """
     for record in data:
-        record['diff'] = record['daily'].get(
-            "temperature_2m_max") - record['daily'].get("temperature_2m_min")
-    valid_data = [rec for rec in data if rec["diff"] is not None]
+        record['temperature_diff'] = round(record['today_max'] - record['today_min', 2])
 
-    for rec in valid_data:
-        rec["negdiff"] = -rec["diff"]
-
-    sorted_result = mini_bubble_sort(valid_data, "negdiff")["Sorted data"]
-
-    # 4. Get the top 5
+    sorted_result = mini_bubble_sort(data, "temperature_diff", True)["Sorted data"]
     top5 = []
-    for i, rec in enumerate(sorted_result):
-        if i < 5:
-            # Remove the helper key before returning
-            rec.pop("negdiff", None)
-            top5.append(rec)
-        else:
-            break
-
+    for rec in sorted_result[-5:][::-1]:  # take last 5 and reverse for descending
+        top5.append({"city": rec["city"], "difference": rec["temperature_diff"]})
     return top5
 
 # def biggest_temp_difference(data_generator):
@@ -747,66 +746,66 @@ def mini_biggest_temp_diff(data: list[dict[str, Any]]):
 #     return max_value if max_value != float("-inf") else None
 
 
-def top5_highest_temp_range(data_generator) -> list:
-    """
-    Returns the top 5 cities with the highest temperature difference (max - min).
-    Optimized to O(n) time complexity using a min-heap approach.
+# def top5_highest_temp_range(data_generator) -> list:
+#     """
+#     Returns the top 5 cities with the highest temperature difference (max - min).
+#     Optimized to O(n) time complexity using a min-heap approach.
 
-    Args:
-        data_generator: Generator/iterator of city weather data where each record contains:
-            - "city": city name
-            - "hourly": dict with "temperature_2m" key containing list of temperatures
+#     Args:
+#         data_generator: Generator/iterator of city weather data where each record contains:
+#             - "city": city name
+#             - "hourly": dict with "temperature_2m" key containing list of temperatures
 
-    Returns:
-        list: Top 5 cities sorted by temperature range (highest first)
-              Each item is a dict with keys: "City", "Min_Temp", "Max_Temp", "Range"
-    """
-    # Keep track of top 5 using a fixed-size array
-    top5 = []
+#     Returns:
+#         list: Top 5 cities sorted by temperature range (highest first)
+#               Each item is a dict with keys: "City", "Min_Temp", "Max_Temp", "Range"
+#     """
+#     # Keep track of top 5 using a fixed-size array
+#     top5 = []
 
-    for record in data_generator:
-        temperatures = record["hourly"]["temperature_2m"]
+#     for record in data_generator:
+#         temperatures = record["hourly"]["temperature_2m"]
 
-        city_min = mini_min(temperatures)
-        city_max = mini_max(temperatures)
+#         city_min = mini_min(temperatures)
+#         city_max = mini_max(temperatures)
 
-        if city_min is not None and city_max is not None:
-            temp_range = city_max - city_min
-            current_city = {
-                "City": record["city"],
-                "Min_Temp": city_min,
-                "Max_Temp": city_max,
-                "Range": temp_range
-            }
+#         if city_min is not None and city_max is not None:
+#             temp_range = city_max - city_min
+#             current_city = {
+#                 "City": record["city"],
+#                 "Min_Temp": city_min,
+#                 "Max_Temp": city_max,
+#                 "Range": temp_range
+#             }
 
-            # If we have less than 5 cities, just add it
-            if len(top5) < 5:
-                top5.append(current_city)
-            else:
-                # Find the city with minimum range in our top5
-                min_range_idx = 0
-                min_range = top5[0]["Range"]
+#             # If we have less than 5 cities, just add it
+#             if len(top5) < 5:
+#                 top5.append(current_city)
+#             else:
+#                 # Find the city with minimum range in our top5
+#                 min_range_idx = 0
+#                 min_range = top5[0]["Range"]
 
-                for i in range(1, 5):
-                    if top5[i]["Range"] < min_range:
-                        min_range = top5[i]["Range"]
-                        min_range_idx = i
+#                 for i in range(1, 5):
+#                     if top5[i]["Range"] < min_range:
+#                         min_range = top5[i]["Range"]
+#                         min_range_idx = i
 
-                # If current city has higher range than the minimum in top5, replace it
-                if temp_range > min_range:
-                    top5[min_range_idx] = current_city
+#                 # If current city has higher range than the minimum in top5, replace it
+#                 if temp_range > min_range:
+#                     top5[min_range_idx] = current_city
 
-            # Manual sort of the final top5 array (insertion sort for small array)
-            for i in range(1, len(top5)):
-                key = top5[i]
-                j = i - 1
+#             # Manual sort of the final top5 array (insertion sort for small array)
+#             for i in range(1, len(top5)):
+#                 key = top5[i]
+#                 j = i - 1
 
-                # Move elements with smaller range to the right
-                while j >= 0 and top5[j]["Range"] < key["Range"]:
-                    top5[j + 1] = top5[j]
-                    j -= 1
+#                 # Move elements with smaller range to the right
+#                 while j >= 0 and top5[j]["Range"] < key["Range"]:
+#                     top5[j + 1] = top5[j]
+#                     j -= 1
 
-                top5[j + 1] = key
+#                 top5[j + 1] = key
 
 # def mini_hottest_city(data: list[dict[str, Any]]) -> Union[int, float]:
 #     """
